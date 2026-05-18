@@ -1,0 +1,36 @@
+---
+import { render, type CollectionEntry } from "astro:content";
+import { accentFor } from "../lib/colors";
+
+interface Props {
+  entry: CollectionEntry<"playbook">;
+  active: boolean;
+}
+
+const { entry, active } = Astro.props;
+const { Content } = await render(entry);
+const accent = accentFor(entry.data.color);
+---
+
+<section
+  data-section
+  data-entry-id={entry.id}
+  data-active={active ? "true" : "false"}
+  style={`--accent: ${accent}`}
+>
+  <header class="section-meta">
+    {entry.data.icon && <span class="icon">{entry.data.icon}</span>}
+    <span class="title">{entry.data.title}</span>
+    {entry.data.summary && <p class="summary">{entry.data.summary}</p>}
+  </header>
+
+  {/*
+    分割前の生コンテンツ。クライアントの presentation.ts が
+    h2 を境界にして .slide コンテナへ再グルーピングする。
+  */}
+  <div class="slide-source" data-slide-source>
+    <Content />
+  </div>
+
+  <div class="slides" data-slides></div>
+</section>

@@ -1,0 +1,431 @@
+@import "tailwindcss";
+
+/* ============================================================
+   デザイントークン（レトロ JRPG / サイバーパンク・アーケード）
+   .github/instructions/frontend.instructions.md に準拠
+   ============================================================ */
+@theme {
+  --color-base: #05060f;
+  --color-panel: #0a0e27;
+  --color-magenta: #ff2e88;
+  --color-cyan: #00f0ff;
+  --color-amber: #ffb000;
+  --color-phosphor: #9bbc0f;
+  --color-text: #e6f1ff;
+  --color-text-dim: #7a8aa8;
+
+  --font-pixel: "DotGothic16", monospace;
+  --font-body: "Noto Sans JP", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Menlo", monospace;
+}
+
+/* ============================================================
+   ベース
+   ============================================================ */
+html,
+body {
+  background-color: var(--color-base);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  /* 各セクションは独自の --accent を上書きする。ここはフォールバック。 */
+  --accent: var(--color-magenta);
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--color-base);
+}
+
+/* 控えめな CRT スキャンライン（body 全体オーバーレイ） */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 100;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.03) 0px,
+    rgba(255, 255, 255, 0.03) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  mix-blend-mode: overlay;
+}
+
+/* ============================================================
+   レイアウト
+   ============================================================ */
+.app {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  min-height: 100vh;
+}
+
+@media (max-width: 768px) {
+  .app {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================
+   サイドバー
+   ============================================================ */
+.sidebar {
+  background-color: var(--color-panel);
+  border-right: 2px solid color-mix(in srgb, var(--color-cyan) 30%, transparent);
+  padding: 1.5rem 1rem;
+  overflow-y: auto;
+  max-height: 100vh;
+  position: sticky;
+  top: 0;
+}
+
+.sidebar h1 {
+  font-family: var(--font-pixel);
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  color: var(--color-cyan);
+  text-shadow: 0 0 8px var(--color-cyan);
+  margin: 0 0 1rem 0;
+}
+
+.sidebar ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  counter-reset: toc;
+}
+
+.sidebar li {
+  counter-increment: toc;
+}
+
+.sidebar a {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.6rem;
+  color: var(--color-text-dim);
+  text-decoration: none;
+  font-family: var(--font-pixel);
+  font-size: 0.78rem;
+  line-height: 1.4;
+  border-left: 2px solid transparent;
+  transition: color 120ms, border-color 120ms, background-color 120ms;
+}
+
+.sidebar a:hover {
+  color: var(--color-text);
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.sidebar a::before {
+  content: counter(toc, decimal-leading-zero);
+  font-size: 0.7rem;
+  color: color-mix(in srgb, var(--color-text-dim) 80%, transparent);
+}
+
+.sidebar li[data-active="true"] > a {
+  color: var(--color-text);
+  border-left-color: var(--toc-accent, var(--color-magenta));
+  background-color: color-mix(
+    in srgb,
+    var(--toc-accent, var(--color-magenta)) 12%,
+    transparent
+  );
+  text-shadow: 0 0 6px var(--toc-accent, var(--color-magenta));
+}
+
+.sidebar li[data-active="true"] > a::before {
+  color: var(--toc-accent, var(--color-magenta));
+}
+
+.sidebar .icon {
+  font-size: 0.95rem;
+}
+
+/* モバイル: サイドバーをドロワー化（簡易） */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: 80vw;
+    max-width: 320px;
+    transform: translateX(-100%);
+    transition: transform 200ms;
+    z-index: 50;
+  }
+  .sidebar[data-open="true"] {
+    transform: translateX(0);
+  }
+  .sidebar-toggle {
+    position: fixed;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: 60;
+    background: var(--color-panel);
+    border: 2px solid var(--color-cyan);
+    color: var(--color-cyan);
+    padding: 0.4rem 0.7rem;
+    font-family: var(--font-pixel);
+    cursor: pointer;
+  }
+}
+
+@media (min-width: 769px) {
+  .sidebar-toggle {
+    display: none;
+  }
+}
+
+/* ============================================================
+   ステージ（右側のスライド領域）
+   ============================================================ */
+.stage {
+  position: relative;
+  padding: 2.5rem 3rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .stage {
+    padding: 4rem 1.25rem 5rem;
+  }
+}
+
+.section-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px dashed
+    color-mix(in srgb, var(--accent) 60%, transparent);
+}
+
+.section-meta .icon {
+  font-size: 1.6rem;
+}
+
+.section-meta .title {
+  font-family: var(--font-pixel);
+  font-size: 1.3rem;
+  color: var(--accent);
+  text-shadow: 0 0 8px var(--accent);
+}
+
+.section-meta .summary {
+  flex-basis: 100%;
+  color: var(--color-text-dim);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* セクション = .md ファイル 1 つ分。1 つだけ active。 */
+section[data-section] {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+}
+
+section[data-section][data-active="true"] {
+  display: flex;
+}
+
+/* スライド (h2 で区切られた 1 枚) */
+.slide {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+  padding: 1rem 0;
+  animation: slide-in 200ms ease-out;
+}
+
+.slide[data-active="true"] {
+  display: flex;
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* スライドソース（分割前）は不可視に。CLS 回避のため visibility ベース */
+.slide-source {
+  display: none;
+}
+
+/* スライド内のタイポグラフィ */
+.slide h2 {
+  font-family: var(--font-pixel);
+  font-size: 1.8rem;
+  color: var(--accent);
+  text-shadow: 0 0 10px var(--accent);
+  margin: 0 0 1rem 0;
+  letter-spacing: 0.04em;
+}
+
+.slide h3 {
+  font-family: var(--font-pixel);
+  font-size: 1.15rem;
+  color: var(--color-cyan);
+  margin: 1.2rem 0 0.6rem;
+}
+
+.slide p,
+.slide li {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.slide ul,
+.slide ol {
+  padding-left: 1.5rem;
+}
+
+.slide a {
+  color: var(--color-cyan);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--color-cyan) 50%, transparent);
+}
+
+.slide a:hover {
+  color: var(--color-text);
+  text-shadow: 0 0 6px var(--color-cyan);
+}
+
+.slide strong {
+  color: var(--accent);
+}
+
+.slide blockquote {
+  border-left: 2px solid var(--accent);
+  padding: 0.4rem 0.9rem;
+  margin: 0.8rem 0;
+  background-color: color-mix(in srgb, var(--accent) 8%, transparent);
+  font-style: normal;
+}
+
+.slide table {
+  border-collapse: collapse;
+  margin: 0.6rem 0;
+  font-size: 0.92rem;
+  width: 100%;
+}
+
+.slide th,
+.slide td {
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  padding: 0.45rem 0.7rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.slide th {
+  background-color: color-mix(in srgb, var(--accent) 15%, transparent);
+  font-family: var(--font-pixel);
+  font-weight: normal;
+  color: var(--accent);
+}
+
+.slide pre {
+  background-color: #000;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  padding: 0.9rem 1rem;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  line-height: 1.55;
+}
+
+.slide :not(pre) > code {
+  font-family: var(--font-mono);
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 0.08rem 0.35rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  font-size: 0.88rem;
+}
+
+/* Mermaid 描画後の中央寄せ */
+.slide .mermaid {
+  display: flex;
+  justify-content: center;
+  margin: 0.8rem 0;
+}
+
+.slide .mermaid[data-processed="true"] svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* hero-quote 等の既存 class を最低限読みやすく */
+.slide .hero-quote {
+  border: 1px dashed var(--accent);
+  padding: 1rem 1.2rem;
+  margin: 0.8rem 0;
+  background-color: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.slide .big-stat {
+  font-family: var(--font-pixel);
+  font-size: 1.6rem;
+  color: var(--accent);
+  text-shadow: 0 0 8px var(--accent);
+}
+
+/* ============================================================
+   ステータスバー（下部の現在位置 / ヘルプ）
+   ============================================================ */
+.status {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  left: 280px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1.5rem;
+  background-color: color-mix(in srgb, var(--color-base) 92%, transparent);
+  border-top: 1px solid
+    color-mix(in srgb, var(--accent) 35%, transparent);
+  font-family: var(--font-pixel);
+  font-size: 0.75rem;
+  color: var(--color-text-dim);
+  z-index: 10;
+}
+
+@media (max-width: 768px) {
+  .status {
+    left: 0;
+  }
+}
+
+.status .position {
+  color: var(--accent);
+  text-shadow: 0 0 6px var(--accent);
+}
+
+.status .keys kbd {
+  font-family: var(--font-pixel);
+  font-size: 0.7rem;
+  padding: 0.1rem 0.4rem;
+  border: 1px solid var(--color-text-dim);
+  margin: 0 0.1rem;
+}
