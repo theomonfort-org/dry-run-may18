@@ -1,0 +1,40 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { accentFor } from "../lib/colors";
+
+interface Props {
+  entries: CollectionEntry<"playbook">[];
+}
+
+const { entries } = Astro.props;
+---
+
+<button class="sidebar-toggle" type="button" aria-label="目次を開く" data-sidebar-toggle>
+  ≡ MENU
+</button>
+
+<aside class="sidebar" data-sidebar>
+  <h1>▼ PLAYBOOK</h1>
+  <ol>
+    {
+      entries.map((entry, index) => {
+        const accent = accentFor(entry.data.color);
+        return (
+          <li
+            data-toc-item
+            data-entry-id={entry.id}
+            data-active={index === 0 ? "true" : "false"}
+            style={`--toc-accent: ${accent}`}
+          >
+            <a href={`#${entry.id}/1`} data-toc-link>
+              {entry.data.icon && (
+                <span class="icon">{entry.data.icon}</span>
+              )}
+              <span>{entry.data.title}</span>
+            </a>
+          </li>
+        );
+      })
+    }
+  </ol>
+</aside>

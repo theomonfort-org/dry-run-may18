@@ -1,0 +1,54 @@
+---
+import { getCollection } from "astro:content";
+import "../styles/global.css";
+import Sidebar from "../components/Sidebar.astro";
+import SectionDeck from "../components/SectionDeck.astro";
+
+const entries = (await getCollection("playbook")).sort((a, b) => {
+  const ao = a.data.order ?? 999;
+  const bo = b.data.order ?? 999;
+  if (ao !== bo) return ao - bo;
+  return a.data.title.localeCompare(b.data.title, "ja");
+});
+---
+
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Playbook プレゼンテーション</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Noto+Sans+JP:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap"
+    />
+  </head>
+  <body>
+    <div class="app">
+      <Sidebar entries={entries} />
+
+      <main class="stage">
+        {entries.map((entry, i) => (
+          <SectionDeck entry={entry} active={i === 0} />
+        ))}
+      </main>
+    </div>
+
+    <footer class="status">
+      <span class="position" data-position>SECTION 1/{entries.length}  ―  SLIDE 1/1</span>
+      <span class="keys">
+        <kbd>←</kbd><kbd>→</kbd> SLIDE / <kbd>↑</kbd><kbd>↓</kbd> SECTION
+      </span>
+    </footer>
+
+    <script>
+      import "../scripts/presentation";
+    </script>
+  </body>
+</html>
