@@ -123,9 +123,11 @@ function splitIntoSlides(section: HTMLElement) {
   const target = section.querySelector<HTMLElement>("[data-slides]");
   if (!source || !target) return;
 
-  // <Content /> は通常 <article> など 1 つの要素を返すため、その中を見る
-  const root: HTMLElement =
-    (source.firstElementChild as HTMLElement | null) ?? source;
+  // Astro の <Content /> はラッパー無しで兄弟ノードを source 直下に並べる。
+  // 一部のレイアウトでは <article> 等の単一ルートで包まれるので両対応する。
+  const onlyChild =
+    source.childElementCount === 1 ? (source.firstElementChild as HTMLElement) : null;
+  const root: HTMLElement = onlyChild ?? source;
   const children = Array.from(root.childNodes);
 
   let current: HTMLDivElement | null = null;
